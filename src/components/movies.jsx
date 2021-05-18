@@ -11,6 +11,7 @@ class Movies extends Component {
     state = {
         movies : [],
         genres: [],
+        selectedGenre:"",
         pageSize: 4,
         currentPage: 1,
     }
@@ -37,20 +38,23 @@ class Movies extends Component {
     };
 
     handleGenreSelect = genre =>{
-        console.log(genre)
+       this.setState({selectedGenre: genre})
     }
     render() {
         console.log(this.state.movies.length)
-        const {pageSize, currentPage, movies: allMovies, genres } = this.state;
-        const movies = paginate(allMovies, currentPage, pageSize)
+        const {pageSize, currentPage, movies: allMovies, genres, selectedGenre } = this.state;
+
+        const filteredMovie = selectedGenre ? allMovies.filter(movie => movie.genre._id === selectedGenre._id) : allMovies;
+
+        const movies = paginate(filteredMovie, currentPage, pageSize)
         return (
             <div className="row">
                 <div className="col-3">
-                    <ListGroup genres={genres} onItemSelect={this.handleGenreSelect}/>
+                    <ListGroup genres={genres} onItemSelect={this.handleGenreSelect} selectedGenre={selectedGenre}/>
                 </div>
                 <div className="col">
                     <div className="example-container">
-                        <h3>There are {this.getTotalMovies()} movies in the Database.</h3>
+                        <h3>There are {filteredMovie.length} movies in the Database.</h3>
                     </div>
                     <table className="table table-striped">
                         <thead>
@@ -77,7 +81,7 @@ class Movies extends Component {
                         </tbody>
                     </table>
                     <PaginationComponent
-                        totalCount = {this.state.movies.length}
+                        totalCount = {filteredMovie.length}
                         pageSize ={pageSize}
                         currentPage = {currentPage}
                         onPageChange = {this.handlePageChange}
@@ -87,11 +91,6 @@ class Movies extends Component {
             </div>
         );
     }
-
-    getTotalMovies(){
-        return this.state.movies.length;
-    }
-
 }
 
 export default Movies;
