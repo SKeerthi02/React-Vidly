@@ -1,10 +1,11 @@
 import React, {Component} from 'react';
 import {getMovies} from "../services/fakeMovieService";
-import LikeComponent from "./common/likeComponent";
 import PaginationComponent from "./common/paginationComponent";
 import {paginate} from "../utils/pagination";
 import {getGenres} from "../services/fakeGenreService";
 import ListGroup from "./common/listGroup";
+import MovieList from "./movieList";
+import _ from "lodash";
 
 class Movies extends Component {
 
@@ -14,10 +15,12 @@ class Movies extends Component {
         selectedGenre:"",
         pageSize: 4,
         currentPage: 1,
+        sortColumn: {path: 'title', order: 'asc'}
     }
 
     componentDidMount() {
-        this.setState({movies: getMovies(), genres:getGenres() })
+        const genres = [{name: "All Genres", _id:""}, ...getGenres()];
+        this.setState({movies: getMovies(), genres })
     }
 
     handleDelete = movie => {
@@ -38,15 +41,21 @@ class Movies extends Component {
     };
 
     handleGenreSelect = genre =>{
-       this.setState({selectedGenre: genre})
+       this.setState({selectedGenre: genre, currentPage:1})
+    }
+
+    handleSort =  sortColumn => {
+        this.setState( {sortColumn });
     }
     render() {
         console.log(this.state.movies.length)
-        const {pageSize, currentPage, movies: allMovies, genres, selectedGenre } = this.state;
+        const {pageSize, currentPage, movies: allMovies, genres, selectedGenre, sortColumn } = this.state;
 
-        const filteredMovie = selectedGenre ? allMovies.filter(movie => movie.genre._id === selectedGenre._id) : allMovies;
+        const filteredMovie = selectedGenre && selectedGenre._id ? allMovies.filter(movie => movie.genre._id === selectedGenre._id) : allMovies;
 
-        const movies = paginate(filteredMovie, currentPage, pageSize)
+        const sortedList = _.orderBy(filteredMovie, [sortColumn.path], [sortColumn.order])
+        console.log(sortedList)
+        const movies = paginate(sortedList, currentPage, pageSize)
         return (
             <div className="row">
                 <div className="col-3">
@@ -56,30 +65,13 @@ class Movies extends Component {
                     <div className="example-container">
                         <h3>There are {filteredMovie.length} movies in the Database.</h3>
                     </div>
-                    <table className="table table-striped">
-                        <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th >Genre</th>
-                            <th >Stock</th>
-                            <th>Rate</th>
-                            <th/>
-                            <th/>
-                        </tr>
-                        </thead>
-                        <tbody>
-                        {movies.map(movie =>
-                            <tr key={movie._id}>
-                                <td>{movie.title}</td>
-                                <td>{movie.genre.name}</td>
-                                <td>{movie.numberInStock}</td>
-                                <td>{movie.dailyRentalRate}</td>
-                                <td><LikeComponent liked={movie.liked} onClick={() => this.handleLike(movie)}/></td>
-                                <td><button onClick={() => this.handleDelete(movie)} className="btn btn-danger btn-sm ">Delete</button></td>
-                            </tr>
-                        )}
-                        </tbody>
-                    </table>
+                    <MovieList
+                        movies = {movies}
+                        sortColumn ={sortColumn}
+                        onLike = {this.handleLike}
+                        onDelete = {this.handleDelete}
+                        onSort = {this.handleSort}
+                    />
                     <PaginationComponent
                         totalCount = {filteredMovie.length}
                         pageSize ={pageSize}
@@ -87,7 +79,6 @@ class Movies extends Component {
                         onPageChange = {this.handlePageChange}
                     />
                 </div>
-
             </div>
         );
     }

@@ -7,7 +7,6 @@ class ListGroup extends Component {
         return (
             <div className="m2">
                 <ul className="list-group m-2">
-                    <li  onClick={()=>onItemSelect("")} className={selectedGenre? "list-group-item": "list-group-item active"}>All Genres</li>
                     {genres.map(genre =>
                         <li onClick={()=>onItemSelect(genre)} key={genre[keyProperty]}
                             className={selectedGenre === genre? "list-group-item active":"list-group-item"}>
