@@ -11,7 +11,6 @@ class Table extends Component {
                 <table className="table table-striped">
                     <TableHeader columns = {columns} onSort = {onSort} sortColumn = {sortColumn} />
                     <TableBody data = {movies} columns = {columns}/>
-
                 </table>
             </div>
         );
